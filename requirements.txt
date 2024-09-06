@@ -1,8 +1,8 @@
-geopandas
-plotly
-pandas
-streamlit
-statsmodels
-matplotlib
-seaborn
-pmdarima
+geopandas==1.0.1
+pandas==2.2.2
+plotly==5.23.0
+geopandas==1.0.1
+streamlit==1.37.1
+statsmodels==0.14.2
+matplotlib==3.9.2
+pmdarima==2.0.4
