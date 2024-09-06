@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import geopandas as gpd
-from streamlit_option_menu import option_menu
 from grafico_mapa import grafico_mapa
 from grafico_hombres_vs_mujeres import grafico_hombres_vs_mujeres
 from grafico_edad_sexo import grafico_edad_sexo

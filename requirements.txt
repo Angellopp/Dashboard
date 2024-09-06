@@ -1,0 +1,8 @@
+geopandas
+plotly
+pandas
+streamlit
+statsmodels
+matplotlib
+seaborn
+pmdarima
