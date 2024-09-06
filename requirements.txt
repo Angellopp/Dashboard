@@ -6,3 +6,4 @@ streamlit==1.37.1
 statsmodels==0.14.2
 matplotlib==3.9.2
 pmdarima==2.0.4
+numpy==1.26.0

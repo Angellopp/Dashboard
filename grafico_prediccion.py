@@ -3,7 +3,6 @@ import numpy as np
 from statsmodels.tsa.arima.model import ARIMA
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-
 from pmdarima import auto_arima
 
 def grafico_prediccion(df_ingresos, df_egresos, periods_to_forecast=12, capacity_limit=1000):
@@ -12,13 +11,13 @@ def grafico_prediccion(df_ingresos, df_egresos, periods_to_forecast=12, capacity
     df_egresos['FECHA_EGRESO'] = pd.to_datetime(df_egresos['FECHA_EGRESO'], format='%Y%m%d')
     
     # Agrupar por fecha y contar ingresos y egresos
-    ingresos_count = df_ingresos.groupby('FECHA_INGRESO').size().resample('M').sum()
-    egresos_count = df_egresos.groupby('FECHA_EGRESO').size().resample('M').sum()
+    ingresos_count = df_ingresos.groupby('FECHA_INGRESO').size().resample('ME').sum()
+    egresos_count = df_egresos.groupby('FECHA_EGRESO').size().resample('ME').sum()
     
     # Asegurar que ambas series tienen el mismo índice
     date_range = pd.date_range(start=min(ingresos_count.index.min(), egresos_count.index.min()),
                                end=max(ingresos_count.index.max(), egresos_count.index.max()),
-                               freq='M')
+                               freq='ME')
     ingresos_count = ingresos_count.reindex(date_range, fill_value=0)
     egresos_count = egresos_count.reindex(date_range, fill_value=0)
     
@@ -38,7 +37,7 @@ def grafico_prediccion(df_ingresos, df_egresos, periods_to_forecast=12, capacity
     
     # Crear el rango de fechas para la predicción
     last_date = delta.index[-1]
-    future_dates = pd.date_range(start=last_date + pd.DateOffset(months=1), periods=periods_to_forecast, freq='M')
+    future_dates = pd.date_range(start=last_date + pd.DateOffset(months=1), periods=periods_to_forecast, freq='ME')
     
     # Crear la figura
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, 
