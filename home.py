@@ -7,7 +7,7 @@ from grafico_hombres_vs_mujeres import grafico_hombres_vs_mujeres
 from grafico_edad_sexo import grafico_edad_sexo
 from grafico_circular_por_distrito import grafico_circular_por_distrito
 from grafico_prediccion import grafico_prediccion
-
+from grafico_barras import grafico_barras
 # set page config para la configuracion de la pagina
 st.set_page_config(
     page_title="Dashboard",
@@ -207,76 +207,68 @@ container_style_2 = lambda height: f"""
 
 # Cargar datos
 # URL del archivo GeoJSON de los departamentos de Perú
-geojson_url = 'https://raw.githubusercontent.com/juaneladio/peru-geojson/master/peru_departamental_simple.geojson'
-# url_csv_egresos = './data/ingresos/Listado_pacientes_nuevos_inen_enero2022_junio2024.csv'
-# url_csv_ingresos = './data/ingresos/Listado_pacientes_nuevos_inen_enero2022_junio2024.csv'
+geojson_url = 'peru_departamental_simple.geojson'
 url_csv_egresos = 'Listado_egresos_hopitalizados_enero_2022_junio2024.csv'
-url_csv_ingresos = 'Listado_pacientes_nuevos_inen_enero2022_junio2024.csv'
+url_csv_ingresos = 'Listado_egresos_hopitalizados_enero_2022_junio2024.csv'
 
 peru_geojson = gpd.read_file(geojson_url)
-df_i = pd.read_csv(url_csv_ingresos, encoding='latin-1')
 df_e = pd.read_csv(url_csv_egresos, encoding='latin-1')
-df_i_totales = pd.read_csv(url_csv_ingresos, encoding='latin-1')
-df_e_totales = pd.read_csv(url_csv_egresos, encoding='latin-1')
+df_i = pd.read_csv(url_csv_ingresos, encoding='latin-1')
 
 # Extraer el departamento de la columna LUGAR_RESIDENCIA
-df_i['DEPARTAMENTO'] = df_i['LUGAR_RESIDENCIA'].str.split('-').str[0].str.strip().str.upper()
-df_i['PROVINCIA'] = df_i['LUGAR_RESIDENCIA'].str.split('-').str[1].str.strip().str.upper()
-# print(df_i['PROVINCIA'])
+df_e['DEPARTAMENTO'] = df_e['LUGAR_RESIDENCIA'].str.split('-').str[0].str.strip().str.upper()
+df_e['PROVINCIA'] = df_e['LUGAR_RESIDENCIA'].str.split('-').str[1].str.strip().str.upper()
+# print(df_e['PROVINCIA'])
 ###### FILTROS ######
 
 # Filtrar los datos por el año seleccionado
-df_i['AÑO_FILIACION'] = df_i['FEC_FILIACION'].astype(str).str[:4]  # Extraer el año de FECHA_EGRESO
-df_i = df_i[df_i['AÑO_FILIACION'] == str(selected_year)]
+df_e_total = df_e.copy()
+df_e['AÑO_EGRESO'] = df_e['FECHA_EGRESO'].astype(str).str[:4]  # Extraer el año de FECHA_EGRESO
+df_e = df_e[df_e['AÑO_EGRESO'] == str(selected_year)]
+df_e_copy = df_e.copy()
 
 # Filtrar departamentos según la macroregión seleccionada
 if selected_macroregion != "TODOS":
     departamentos_en_macroregion = macroregiones.get(selected_macroregion, [])
-    df_i = df_i[df_i['DEPARTAMENTO'].isin(departamentos_en_macroregion)]
+    df_e = df_e[df_e['DEPARTAMENTO'].isin(departamentos_en_macroregion)]
 
 # Filtrar los datos por el mes seleccionado si no es "Todos"
 if mes_dict[selected_mes] is not None:
-    df_i['MES_FILIACION'] = df_i['FEC_FILIACION'].astype(str).str[4:6]  # Extraer el mes de FECHA_EGRESO
-    df_i = df_i[df_i['MES_FILIACION'] == mes_dict[selected_mes]]
+    df_e['MES_EGRESO'] = df_e['FECHA_EGRESO'].astype(str).str[4:6]  # Extraer el mes de FECHA_EGRESO
+    df_e = df_e[df_e['MES_EGRESO'] == mes_dict[selected_mes]]
 
 # Filtrar los datos por el departamento seleccionado si no es "Todos"
 if selected_departamento != "TODOS":
-    df_i = df_i[df_i['DEPARTAMENTO'] == selected_departamento]
+    df_e = df_e[df_e['DEPARTAMENTO'] == selected_departamento]
 
 if selected_provincia != "TODOS":
-    df_i = df_i[df_i['PROVINCIA'] == selected_provincia]
+    df_e = df_e[df_e['PROVINCIA'] == selected_provincia]
     
 # Si está vacío, recargar el conjunto de datos completo sin aplicar filtros
-if df_i.empty:
-    df_i = pd.read_csv(url_csv_egresos, encoding='latin-1')
+if df_e.empty:
+    df_e = pd.read_csv(url_csv_egresos, encoding='latin-1')
 
 
 
 # Contar la cantidad de egresos por departamento
-if 'DEPARTAMENTO'  not in df_i.columns or 'PROVINCIA' not in df_i.columns:
+if 'DEPARTAMENTO'  not in df_e.columns or 'PROVINCIA' not in df_e.columns:
     st.warning("No hay datos disponibles para mostrar en el mapa. Verifique los filtros seleccionados.")
-    df_i = pd.read_csv(url_csv_egresos, encoding='latin-1')
-    df_i['DEPARTAMENTO'] = df_i['LUGAR_RESIDENCIA'].str.split('-').str[0].str.strip().str.upper()
-    df_i['PROVINCIA'] = df_i['LUGAR_RESIDENCIA'].str.split('-').str[1].str.strip().str.upper()
-    # df_i = pd.read_csv(url_csv_egresos, encoding='latin-1')
-
-# if 'PROVINCIA' not in df_i.columns:
-    # st.warning("No hay datos disponibles para mostrar en el mapa. Verifique los filtros seleccionados.")
+    df_e = df_e_copy
 
 # Cálculo de estadísticas
-total_patients = len(df_i)
-male_patients = len(df_i[df_i['SEXO'] == 'MASCULINO'])
-female_patients = len(df_i[df_i['SEXO'] == 'FEMENINO'])
+total_patients = len(df_e)
+male_patients = len(df_e[df_e['SEXO'] == 'MASCULINO'])
+female_patients = len(df_e[df_e['SEXO'] == 'FEMENINO'])
 male_percentage = (male_patients / total_patients) * 100
 female_percentage = (female_patients / total_patients) * 100
 
-egresos_por_departamento = df_i['DEPARTAMENTO'].value_counts().reset_index()
+egresos_por_departamento = df_e['DEPARTAMENTO'].value_counts().reset_index()
 egresos_por_departamento.columns = ['Departamento', 'Cantidad']
 
-egresos_por_provincia = df_i['PROVINCIA'].value_counts().reset_index()
+egresos_por_provincia = df_e['PROVINCIA'].value_counts().reset_index()
 egresos_por_provincia.columns = ['Provincia', 'Cantidad']
 
-# print(df_i)
+# print(df_e)
 # Unir los datos de los egresos con el GeoJSON
 peru_geojson['Departamento'] = peru_geojson['NOMBDEP'].str.strip().str.upper()
 merged = peru_geojson.merge(egresos_por_departamento, on='Departamento', how='left')
@@ -400,16 +392,16 @@ with contiene2:
     grafico2 = grafico_hombres_vs_mujeres(total_patients, male_percentage, male_patients, female_percentage, female_patients)
     st.markdown(grafico2, unsafe_allow_html=True)
     #graifca de barras por sexo de los pacientes
-    grafico3 = grafico_edad_sexo(df_i)
+    grafico3 = grafico_edad_sexo(df_e)
     st.plotly_chart(grafico3, use_container_width=True)
     # st.markdown(container_style(295), unsafe_allow_html=True)
 
 with contiene3:
     # st.markdown(container_style(250), unsafe_allow_html=True)
     # Crear subparcelas: usar el tipo 'dominio' para la subparcela circular 
-    grafico4 = grafico_circular_por_distrito(df_i)
+    grafico4 = grafico_barras(df_e)
     st.plotly_chart(grafico4, use_container_width=True)
-    grafico5 = grafico_prediccion(df_i_totales, df_e_totales)
+    grafico5 = grafico_prediccion(df_e_total)
     st.plotly_chart(grafico5, use_container_width=True)
     # st.markdown(container_style(290), unsafe_allow_html=True)
     

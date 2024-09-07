@@ -9,7 +9,7 @@ def grafico_hombres_vs_mujeres(total_patients, male_percentage, male_patients, f
                         font-weight: bolder;
                         overflow-wrap: break-word;
                         margin-bottom: -16px;">{total_patients}</div>
-            <div style="text-align: center;color: rgb(0, 34, 101);font-size: 22px;font-family: 'Source Sans Pro';border-bottom: 0.2px solid #A0A0A0;font-weight: initial;overflow-wrap: break-word;">N°pacientes</div>
+            <div style="text-align: center;color: rgb(0, 34, 101);font-size: 22px;font-family: 'Source Sans Pro';border-bottom: 0.2px solid #A0A0A0;font-weight: initial;overflow-wrap: break-word;">N°egresos</div>
         </div>
         <div style="background: #D9D9D9; border: 0.60px #A0A0A0"></div>
         <div style="display: flex;flex-direction: row; justify-content: space-around;">
